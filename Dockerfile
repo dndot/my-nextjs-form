@@ -34,17 +34,15 @@ WORKDIR /app
 # Copy package.json and package-lock.json
 COPY package.json package-lock.json ./
 
-# Clean npm cache and increase timeout to avoid idle timeout issues
-RUN npm cache clean --force && npm config set fetch-timeout 600000 && npm install
+# Set npm timeout and clean cache
+RUN npm config set fetch-timeout 600000 && npm cache clean --force && npm install
 
 # Copy all other files
 COPY . .
 
-# Build Next.js application
-RUN npm run build
-
-# Expose the port
+# Expose port 3000
 EXPOSE 3000
 
-# Start the app
-CMD ["npm", "start"]
+# Start the Next.js app in development mode (if dev mode is required)
+CMD ["npm", "run", "dev"]
+
