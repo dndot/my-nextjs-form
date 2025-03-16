@@ -1,48 +1,28 @@
-# # Use official Node.js image as a base
-# FROM node:18-alpine AS builder
-
-# # Set working directory
-# WORKDIR /app
-
-# # Copy package.json and install dependencies
-# COPY package.json package-lock.json ./
-# RUN npm install
-
-# # Copy the rest of the app
-# COPY . .
-
-# # Build the Next.js application
-# RUN npm run build
-
-# # Use a minimal Node.js image for production
-# FROM node:18-alpine AS runner
-# WORKDIR /app
-
-# # Copy built application from builder stage
-# COPY --from=builder /app ./
-
-# # Expose port
-# EXPOSE 3000
-
-# # Start the application
-# CMD ["npm", "run", "start"]
-
+# Use official Node.js image as a base
 FROM node:18-alpine AS builder
 
+# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy package.json and install dependencies
 COPY package.json package-lock.json ./
+RUN npm install
 
-# Set npm timeout and clean cache
-RUN npm config set fetch-timeout 600000 && npm cache clean --force && npm install
-
-# Copy all other files
+# Copy the rest of the app
 COPY . .
 
-# Expose port 3000
+# Build the Next.js application
+RUN npm run build
+
+# Use a minimal Node.js image for production
+FROM node:18-alpine AS runner
+WORKDIR /app
+
+# Copy built application from builder stage
+COPY --from=builder /app ./
+
+# Expose port
 EXPOSE 3000
 
-# Start the Next.js app in development mode (if dev mode is required)
-CMD ["npm", "run", "dev"]
-
+# Start the application
+CMD ["npm", "run", "start"]
