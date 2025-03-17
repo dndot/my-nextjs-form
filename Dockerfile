@@ -10,8 +10,8 @@ RUN apk add --no-cache python3 make g++
 # Copy package.json and package-lock.json first to leverage Docker layer caching
 COPY package.json package-lock.json ./
 
-# Clean npm cache and install dependencies
-RUN npm cache clean --force && npm install --omit=dev
+# Clean npm cache and force a clean install
+RUN rm -rf node_modules && npm cache clean --force && npm install --omit=dev --legacy-peer-deps
 
 # Copy the rest of the application
 COPY . .
