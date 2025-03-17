@@ -1,26 +1,28 @@
-# Use an official Node.js image
-FROM node:18-alpine
+# Use official Node.js image as a base
+FROM node:18-alpine AS builder
 
-# Set the working directory
+# Set working directory
 WORKDIR /app
 
-# Install dependencies required for Next.js
-RUN apk add --no-cache python3 make g++ 
-
-# Copy package.json and package-lock.json first to leverage Docker layer caching
+# Copy package.json and install dependencies
 COPY package.json package-lock.json ./
+RUN npm install
 
-# Clean npm cache and force a clean install
-RUN rm -rf node_modules && npm cache clean --force && npm install --omit=dev --legacy-peer-deps
-
-# Copy the rest of the application
+# Copy the rest of the app
 COPY . .
 
-# Build the Next.js app
+# Build the Next.js application
 RUN npm run build
 
-# Expose port 3000
+# Use a minimal Node.js image for production
+FROM node:18-alpine AS runner
+WORKDIR /app
+
+# Copy built application from builder stage
+COPY --from=builder /app ./
+
+# Expose port
 EXPOSE 3000
 
-# Start the Next.js app
-CMD ["npm", "start"]
+# Start the application
+CMD ["npm", "run", "start"]
