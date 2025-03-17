@@ -4,18 +4,23 @@ FROM node:18-alpine
 # Set the working directory
 WORKDIR /app
 
-# Copy package.json and install dependencies
-COPY package.json package-lock.json ./
-RUN npm install --production
+# Install dependencies required for Next.js
+RUN apk add --no-cache python3 make g++ 
 
-# Copy the rest of the app
+# Copy package.json and package-lock.json first to leverage Docker layer caching
+COPY package.json package-lock.json ./
+
+# Clean npm cache and install dependencies
+RUN npm cache clean --force && npm install --omit=dev
+
+# Copy the rest of the application
 COPY . .
 
 # Build the Next.js app
 RUN npm run build
 
-# Expose port
+# Expose port 3000
 EXPOSE 3000
 
-# Start the app
+# Start the Next.js app
 CMD ["npm", "start"]
